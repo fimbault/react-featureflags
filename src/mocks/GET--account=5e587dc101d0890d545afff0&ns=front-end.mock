@@ -1,0 +1,20 @@
+HTTP/1.1 200 OK
+Date: Thu, 05 Mar 2020 02:50:19 GMT
+Content-Type: application/json
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Headers: *
+Access-Control-Allow-Methods: *
+Access-Control-Max-Age: 1728000
+
+{
+  "environment": "local",
+  "namespace": "front-end",
+  "flags": {
+    "api-url": "https://api.someserver.com",
+    "maintenance": false,
+    "intercom-api-key": "1000099344",
+    "sentry-id": "909093232",
+    "newrelic-id": "999298982323"
+  }
+}

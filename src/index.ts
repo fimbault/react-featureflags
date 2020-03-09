@@ -7,4 +7,9 @@ export {
   FeatureFlagsProviderProps
 } from './components/FeatureFlags'
 
-export { getRuntimeFeatureFlags } from './components/runtimeConfig'
+export {
+  getRuntimeFeatureFlags,
+  getRuntimeEnvironment,
+  getRuntimeNamespace,
+  setRuntimeFeatureFlags
+} from './components/runtimeConfig'

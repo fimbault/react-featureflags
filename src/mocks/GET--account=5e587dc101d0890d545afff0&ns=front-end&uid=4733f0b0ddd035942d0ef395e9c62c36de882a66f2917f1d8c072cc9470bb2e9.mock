@@ -16,6 +16,6 @@ Access-Control-Max-Age: 1728000
     "intercom-api-key": "1000099344",
     "sentry-id": "909093232",
     "newrelic-id": "999298982323",
-    "feature001": "A"
+    "feature001": "B"
   }
 }

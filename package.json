@@ -1,6 +1,6 @@
 {
   "name": "@twoflags/react-featureflags",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "React helper components and hooks for Feature Flags service",
   "main": "build/index.js",
   "module": "build/index.es.js",

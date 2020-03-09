@@ -7,6 +7,7 @@ export interface FeatureFlagsProviderProps {
   clientID: string
   namespace: string
   featureFlagsAPI?: string
+  uniqueID?: string
   fetchInterval?: number
   logging?: (flags: Flags) => any
   children: React.ReactNode
@@ -37,7 +38,14 @@ export const useInterval = (callback: () => any, delay: number | null) => {
 export interface Flags {
   [key: string]: any
 }
-export const FeatureFlagsContext = React.createContext<Flags | null>(null)
+export interface FeatureFlagsContextProps {
+  flags: Flags
+  setUniqueID: (uid: string) => any
+}
+
+export const FeatureFlagsContext = React.createContext<FeatureFlagsContextProps | null>(
+  null
+)
 
 const flagDiff = (a: Flags, b: Flags): Flags => {
   return Object.keys(b).reduce((acc, key) => {
@@ -66,19 +74,21 @@ export interface GetFeatureFlagsParams {
   namespace: string
   environment?: string
   featureFlagsAPI?: string
+  uniqueID?: string
 }
 
 export const getFeatureFlags = ({
   clientID,
   namespace,
   environment,
-  featureFlagsAPI
+  featureFlagsAPI,
+  uniqueID
 }: GetFeatureFlagsParams) =>
   fetch(
     `${featureFlagsAPI ||
-      'https://resolver.twoflags.io'}/?account=${clientID}&ns=${namespace}${
-      environment ? '&env=' + environment : ''
-    }`
+      'https://resolver.twoflags.io'}/?account=${clientID}&ns=${namespace}${(environment
+      ? '&env=' + environment
+      : '') + (uniqueID ? '&uid=' + uniqueID : '')}`
   ).then(res => res.json())
 
 const getInterval = (interval?: number) => {
@@ -93,20 +103,27 @@ export const FeatureFlagsProvider: React.FC<FeatureFlagsProviderProps> = ({
   clientID,
   namespace,
   featureFlagsAPI,
+  uniqueID,
   fetchInterval,
   logging,
   children
 }) => {
   const [data, setData] = React.useState<any>(null)
   const [interval, setInterval] = React.useState<number | null>(null)
+  const [internalUniqueID, setInternalUniqueID] = React.useState(uniqueID)
 
   const getFlags = () =>
-    getFeatureFlags({ clientID, namespace, featureFlagsAPI }).then(nextData => {
+    getFeatureFlags({
+      clientID,
+      namespace,
+      featureFlagsAPI,
+      uniqueID: internalUniqueID
+    }).then(nextData => {
       if (!data) {
-        setData(nextData.flags)
-        setRuntimeFeatureFlags(nextData.flags)
+        setData(nextData)
+        setRuntimeFeatureFlags(nextData)
       } else {
-        const diff = flagDiff(data, nextData.flags)
+        const diff = flagDiff(data, nextData)
         if (!isObjectEmpty(diff)) {
           const newData = Object.assign({}, data, diff)
           setData(newData)
@@ -131,19 +148,59 @@ export const FeatureFlagsProvider: React.FC<FeatureFlagsProviderProps> = ({
   React.useEffect(() => {
     getFlags()
     setInterval(getInterval(fetchInterval))
-  }, [])
+  }, [internalUniqueID])
 
   useInterval(() => getFlags(), interval)
+
+  const handleUpdateUniqueID = (uid: string) => {
+    setInternalUniqueID(uid)
+  }
 
   if (!data) {
     return null
   }
 
   return (
-    <FeatureFlagsContext.Provider value={data}>
+    <FeatureFlagsContext.Provider
+      value={{ flags: data, setUniqueID: handleUpdateUniqueID }}
+    >
       {children}
     </FeatureFlagsContext.Provider>
   )
 }
 
-export const useFeatureFlags = () => React.useContext(FeatureFlagsContext)
+export const useFeatureFlags = () => {
+  const flagsContext = React.useContext(FeatureFlagsContext)
+  if (!flagsContext) {
+    return flagsContext
+  }
+
+  return flagsContext.flags.flags
+}
+
+export const useFeatureFlagsEnvironment = () => {
+  const flagsContext = React.useContext(FeatureFlagsContext)
+  if (!flagsContext) {
+    return flagsContext
+  }
+
+  return flagsContext.flags.environment
+}
+
+export const useFeatureFlagsNamespace = () => {
+  const flagsContext = React.useContext(FeatureFlagsContext)
+  if (!flagsContext) {
+    return flagsContext
+  }
+
+  return flagsContext.flags.namespace
+}
+
+export const useFeatureFlagsUniqueIDUpdater = () => {
+  const flagsContext = React.useContext(FeatureFlagsContext)
+  if (!flagsContext) {
+    return flagsContext
+  }
+
+  return flagsContext.setUniqueID
+}

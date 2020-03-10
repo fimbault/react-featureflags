@@ -2,6 +2,9 @@ export {
   FeatureFlagsProvider,
   FeatureFlagsContext,
   useFeatureFlags,
+  useFeatureFlagsEnvironment,
+  useFeatureFlagsNamespace,
+  useFeatureFlagsUniqueIDUpdater,
   getFeatureFlags,
   Flags,
   FeatureFlagsProviderProps
